@@ -7,6 +7,12 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --card-w: 44px;
+      --card-h: 63px;
+      --table-peek: 6px;
+    }
+
     body {
       font-family: "Segoe UI", Arial, sans-serif;
       background: #1a6b3a;
@@ -19,9 +25,29 @@
       gap: 10px;
     }
 
+    #game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 780px) 220px;
+      gap: 12px;
+      align-items: start;
+      width: 100%;
+      max-width: 1012px;
+    }
+    #game-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    #side-panel {
+      min-width: 0;
+    }
+
     h1 {
       font-size: 1.5rem; text-shadow: 1px 1px 3px #000;
       display: flex; align-items: center; gap: 8px;
+      justify-content: center;
     }
     h1 .ver {
       font-size: 0.65rem; color: #aaa; font-weight: normal;
@@ -51,7 +77,7 @@
     .card-row { display: flex; flex-wrap: wrap; gap: 5px; min-height: 62px; align-items: flex-end; }
 
     .card {
-      width: 44px; height: 63px; border-radius: 5px; border: 2px solid #fff;
+      width: var(--card-w); height: var(--card-h); border-radius: 5px; border: 2px solid #fff;
       display: flex; flex-direction: column; justify-content: space-between;
       padding: 2px 3px; font-size: 0.75rem; font-weight: bold; cursor: default;
       user-select: none; position: relative; background: #fff; color: #222;
@@ -80,6 +106,84 @@
       background: rgba(255,255,255,0.07); border: 2px dashed rgba(255,255,255,0.3); color: transparent;
     }
 
+    .table-row {
+      width: calc(var(--card-w) * 5 + 5px * 4);
+      min-height: calc(var(--card-h) + var(--table-peek));
+      align-content: flex-start;
+    }
+    .table-slot {
+      position: relative;
+      width: var(--card-w);
+      height: calc(var(--card-h) + var(--table-peek));
+      flex: 0 0 var(--card-w);
+    }
+    .table-slot .card {
+      position: absolute;
+      left: 0;
+      bottom: var(--table-peek);
+    }
+    .table-slot .under-card {
+      bottom: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .table-slot .face-card {
+      z-index: 1;
+    }
+    .table-area {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .table-board {
+      min-width: 0;
+    }
+    .score-pile {
+      width: 104px;
+      min-height: 142px;
+      padding-top: 18px;
+      flex: 0 0 104px;
+    }
+    .score-pile-title {
+      font-size: 0.7rem;
+      color: #f1c40f;
+      text-align: center;
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+    .score-stack {
+      position: relative;
+      width: 100%;
+      height: 112px;
+    }
+    .score-stack .card {
+      position: absolute;
+      left: calc(14px + var(--stack-col) * 28px);
+      top: calc(var(--stack-row) * 12px);
+      transform: rotate(calc((var(--stack-col) * 2 - 1) * 2deg)) scale(0.72);
+      transform-origin: top center;
+      z-index: var(--stack-i);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      transition: none;
+    }
+    .score-stack .card .top {
+      font-size: 0.8rem;
+      text-shadow: 0 0 1px rgba(255,255,255,0.75);
+    }
+    .score-stack .card.empty {
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%) scale(0.72);
+      box-shadow: none;
+    }
+    .score-count {
+      font-size: 0.68rem;
+      color: #aee;
+      text-align: center;
+      line-height: 1.2;
+    }
+
     /* ===== 出牌区 ===== */
     #play-area {
       display: flex; gap: 30px; align-items: center; justify-content: center;
@@ -106,7 +210,8 @@
     /* ===== 历史面板 ===== */
     #history-panel {
       background: rgba(0,0,0,0.35); border-radius: 10px; padding: 8px 14px;
-      width: 100%; max-width: 780px; font-size: 0.78rem;
+      width: 100%; font-size: 0.78rem;
+      position: sticky; top: 16px;
     }
     #history-panel h3 {
       font-size: 0.85rem; margin-bottom: 6px; color: #f1c40f; display: flex; align-items: center; gap: 6px;
@@ -134,12 +239,23 @@
     }
 
     @media (max-width: 480px) {
-      .card { width: 36px; height: 54px; font-size: 0.65rem; }
+      :root { --card-w: 36px; --card-h: 54px; --table-peek: 5px; }
+      .card { font-size: 0.65rem; }
       .card .suit { font-size: 0.85rem; }
+      .table-area { gap: 10px; }
+      .score-pile { width: 86px; flex-basis: 86px; }
+      .score-stack .card { left: calc(8px + var(--stack-col) * 24px); top: calc(var(--stack-row) * 11px); }
+    }
+    @media (max-width: 760px) {
+      #game-layout { display: flex; flex-direction: column; align-items: center; }
+      #game-main, #side-panel { width: 100%; max-width: 780px; }
+      #history-panel { position: static; }
     }
   </style>
 </head>
 <body>
+  <div id="game-layout">
+  <main id="game-main">
   <h1>🃏 扑克牌对战 <span class="ver">v2026.5.1.1</span></h1>
 
   <div id="dragon-info"></div>
@@ -149,10 +265,13 @@
     <h2>🤖 玩家2（AI） <span id="badge-p2" class="badge" style="display:none">先手</span></h2>
     <div class="row-label">手牌（AI，牌面朝下）</div>
     <div class="card-row" id="hand-p2"></div>
-    <div class="row-label">桌面明牌</div>
-    <div class="card-row" id="face-p2"></div>
-    <div class="row-label">桌面底牌</div>
-    <div class="card-row" id="down-p2"></div>
+    <div class="table-area">
+      <div class="table-board">
+        <div class="row-label">桌面牌</div>
+        <div class="card-row table-row" id="face-p2"></div>
+      </div>
+      <div class="score-pile" id="score-pile-p2"></div>
+    </div>
     <div class="info-row" id="info-p2"></div>
   </div>
 
@@ -178,19 +297,25 @@
     <button id="btn-restart">重新开始</button>
   </div>
 
-  <!-- 最近回合历史 -->
-  <div id="history-panel"></div>
-
   <!-- 玩家1（你） -->
   <div class="player-zone" id="zone-p1">
     <h2>🧑 玩家1（你） <span id="badge-p1" class="badge" style="display:none">先手</span></h2>
-    <div class="row-label">桌面底牌</div>
-    <div class="card-row" id="down-p1"></div>
-    <div class="row-label">桌面明牌（点击选择）</div>
-    <div class="card-row" id="face-p1"></div>
+    <div class="table-area">
+      <div class="table-board">
+        <div class="row-label">桌面牌（点击选择）</div>
+        <div class="card-row table-row" id="face-p1"></div>
+      </div>
+      <div class="score-pile" id="score-pile-p1"></div>
+    </div>
     <div class="row-label">手牌（点击选择）</div>
     <div class="card-row" id="hand-p1"></div>
     <div class="info-row" id="info-p1"></div>
+  </div>
+  </main>
+
+  <aside id="side-panel">
+    <div id="history-panel"></div>
+  </aside>
   </div>
 
   <script>
@@ -331,6 +456,7 @@
         playedP1: null, playedP2: null, roundResult: null,
         round: 1, scoreP1: 0, scoreP2: 0, dragonSuit: null,
         roundScore: 0, p1PlayedFaceIdx: null, p2PlayedFaceIdx: null,
+        scoreCardsP1: [], scoreCardsP2: [],
         history: [], // 最近3轮出牌历史
       };
       state.dragonSuit = determineDragonSuit();
@@ -386,8 +512,14 @@
       state.roundScore = roundScore;
       state.roundResult = roundWinner === 1 ? 'p1' : roundWinner === 2 ? 'p2' : 'tie';
 
-      if (roundWinner === 1) state.scoreP1 += roundScore;
-      else if (roundWinner === 2) state.scoreP2 += roundScore;
+      const wonScoreCards = [state.playedP1, state.playedP2].filter(card => getCardScore(card) > 0);
+      if (roundWinner === 1) {
+        state.scoreP1 += roundScore;
+        state.scoreCardsP1.push(...wonScoreCards);
+      } else if (roundWinner === 2) {
+        state.scoreP2 += roundScore;
+        state.scoreCardsP2.push(...wonScoreCards);
+      }
 
       // 计入历史
       addHistory(state.playedP1, state.playedP2, state.roundResult, roundScore, state.round);
@@ -475,30 +607,23 @@
         playableSet = new Set(getPlayableCards(p, leadCard).map(pc => `${pc.type}-${pc.index}`));
       }
 
-      const downEl = document.getElementById(`down-${pid}`);
-      downEl.innerHTML = '';
-      for (let i = 0; i < 10; i++) {
-        downEl.appendChild(p.table[i].down ? makeCardEl(p.table[i].down, { fd: true }) : makeEmptyEl());
-      }
-
       const faceEl = document.getElementById(`face-${pid}`);
       faceEl.innerHTML = '';
       for (let i = 0; i < 10; i++) {
-        if (p.table[i].face) {
-          const canSel = playableSet && playableSet.has(`face-${i}`);
-          const el = makeCardEl(p.table[i].face, canSel ? { sel: true } : {});
-          if (canSel) {
-            const isSel = state.selectedSource && state.selectedSource.type === 'face' && state.selectedSource.index === i;
-            if (isSel) el.classList.add('selected');
-            const fi = i;
-            el.addEventListener('click', () => {
-              if (state.phase !== 'select') return;
-              state.selectedSource = (isSel) ? null : { type: 'face', index: fi };
-              render();
-            });
-          }
-          faceEl.appendChild(el);
-        } else faceEl.appendChild(makeEmptyEl());
+        const slot = p.table[i];
+        const canSel = slot.face && playableSet && playableSet.has(`face-${i}`);
+        const tableSlot = makeTableSlotEl(slot, canSel ? { sel: true } : {});
+        if (canSel) {
+          const isSel = state.selectedSource && state.selectedSource.type === 'face' && state.selectedSource.index === i;
+          if (isSel) tableSlot.faceEl.classList.add('selected');
+          const fi = i;
+          tableSlot.faceEl.addEventListener('click', () => {
+            if (state.phase !== 'select') return;
+            state.selectedSource = (isSel) ? null : { type: 'face', index: fi };
+            render();
+          });
+        }
+        faceEl.appendChild(tableSlot.el);
       }
 
       const handEl = document.getElementById(`hand-${pid}`);
@@ -527,7 +652,8 @@
 
       const hc = p.hand.length, fc = p.table.filter(s => s.face).length, dc = p.table.filter(s => s.down).length;
       const sc = pid === 'p1' ? state.scoreP1 : state.scoreP2;
-      document.getElementById(`info-${pid}`).textContent = `手牌: ${hc}张 | 明牌: ${fc}张 | 底牌: ${dc}张 | 得分: ${sc}分`;
+      document.getElementById(`info-${pid}`).textContent = `手牌: ${hc}张 | 桌面牌: ${fc}张 | 底牌: ${dc}张 | 得分: ${sc}分`;
+      renderScorePile(pid);
     }
 
     function renderPlayArea() {
@@ -568,9 +694,11 @@
 
     function renderHistory() {
       const el = document.getElementById('history-panel');
-      if (state.history.length === 0) { el.innerHTML = ''; return; }
-
       let html = '<h3>📜 最近回合</h3>';
+      if (state.history.length === 0) {
+        el.innerHTML = `${html}<div class="history-row"><span class="hr-round">暂无</span></div>`;
+        return;
+      }
       for (const h of state.history) {
         const wLabel = h.winner === 'p1' ? '<span class="hr-win">你胜</span>'
                       : h.winner === 'p2' ? '<span class="hr-lose">AI胜</span>'
@@ -588,6 +716,42 @@
         </div>`;
       }
       el.innerHTML = html;
+    }
+
+    function renderScorePile(pid) {
+      const el = document.getElementById(`score-pile-${pid}`);
+      const cards = pid === 'p1' ? state.scoreCardsP1 : state.scoreCardsP2;
+      const total = pid === 'p1' ? state.scoreP1 : state.scoreP2;
+      const visibleCards = cards.slice(-14);
+
+      el.innerHTML = '';
+
+      const title = document.createElement('div');
+      title.classList.add('score-pile-title');
+      title.textContent = pid === 'p1' ? '你得分牌' : 'AI得分牌';
+      el.appendChild(title);
+
+      const stack = document.createElement('div');
+      stack.classList.add('score-stack');
+      if (visibleCards.length === 0) {
+        const empty = makeEmptyEl();
+        empty.style.setProperty('--stack-i', 0);
+        stack.appendChild(empty);
+      } else {
+        visibleCards.forEach((card, idx) => {
+          const cardEl = makeCardEl(card);
+          cardEl.style.setProperty('--stack-i', idx);
+          cardEl.style.setProperty('--stack-col', idx % 2);
+          cardEl.style.setProperty('--stack-row', Math.floor(idx / 2));
+          stack.appendChild(cardEl);
+        });
+      }
+      el.appendChild(stack);
+
+      const count = document.createElement('div');
+      count.classList.add('score-count');
+      count.textContent = cards.length ? `${cards.length}张 / ${total}分` : '暂无';
+      el.appendChild(count);
     }
 
     function cardToLabel(card) {
@@ -615,6 +779,23 @@
         el.innerHTML = `<span class="top">${card.rank}</span><span class="suit">${card.suit}</span><span class="bottom">${card.rank}</span>`;
       }
       return el;
+    }
+
+    function makeTableSlotEl(slot, faceOpts = {}) {
+      const el = document.createElement('div');
+      el.classList.add('table-slot');
+
+      if (slot.down) {
+        const underCard = makeCardEl(slot.down, { fd: true });
+        underCard.classList.add('under-card');
+        el.appendChild(underCard);
+      }
+
+      const faceEl = slot.face ? makeCardEl(slot.face, faceOpts) : makeEmptyEl();
+      faceEl.classList.add('face-card');
+      el.appendChild(faceEl);
+
+      return { el, faceEl };
     }
 
     function makeEmptyEl() {
