@@ -401,39 +401,65 @@
       return '♠';
     }
 
-    // ★★★ AI 选牌（升级版 — 抢分优先） ★★★
-    function aiChooseCard(player, leadCard) {
+    function canSecondCardWin(leadCard, secondCard) {
+      return compareCards(leadCard, secondCard) < 0;
+    }
+
+    function canLeadCardHold(leadCard, opponent) {
+      const replies = getPlayableCards(opponent, leadCard);
+      return replies.length === 0 || replies.every(reply => compareCards(leadCard, reply.card) > 0);
+    }
+
+    function getCardPower(card) {
+      return (isPrivileged(card) ? 100 : 0) + RANK_ORDER.indexOf(card.rank);
+    }
+
+    function chooseLowestPower(cards) {
+      let best = cards[0];
+      let bestPower = getCardPower(best.card);
+      for (let i = 1; i < cards.length; i++) {
+        const power = getCardPower(cards[i].card);
+        if (power < bestPower) { bestPower = power; best = cards[i]; }
+      }
+      return best;
+    }
+
+    function chooseLowestScoreCard(cards) {
+      let best = cards[0];
+      for (let i = 1; i < cards.length; i++) {
+        const bestScore = getCardScore(best.card);
+        const score = getCardScore(cards[i].card);
+        const power = getCardPower(cards[i].card);
+        const bestPower = getCardPower(best.card);
+        if (score < bestScore || (score === bestScore && power < bestPower)) best = cards[i];
+      }
+      return best;
+    }
+
+    // ★★★ AI 选牌（抢分与安全出分优先） ★★★
+    function aiChooseCard(player, leadCard, opponent = null) {
       const playable = getPlayableCards(player, leadCard);
       if (playable.length === 0) return null;
 
-      // 后手且有领牌 → 尝试用分数牌抢分
       if (leadCard) {
-        const leadRank = RANK_ORDER.indexOf(leadCard.rank);
-        // 对方出的不是特别大（K以下/含K也算小牌范围）
-        // → 找能赢对方且能得分的 5/10/K
-        const scoreBeaters = playable.filter(a => {
-          const r = RANK_ORDER.indexOf(a.card.rank);
-          return getCardScore(a.card) > 0 && r > leadRank;
-        });
-        if (scoreBeaters.length > 0) {
-          // 刚好能赢的最小分数牌（省大牌）
-          let best = scoreBeaters[0];
-          let br = RANK_ORDER.indexOf(best.card.rank);
-          for (let i = 1; i < scoreBeaters.length; i++) {
-            const r = RANK_ORDER.indexOf(scoreBeaters[i].card.rank);
-            if (r < br) { br = r; best = scoreBeaters[i]; }
-          }
-          return best;
+        const winners = playable.filter(a => canSecondCardWin(leadCard, a.card));
+        const scoreWinners = winners.filter(a => getCardScore(a.card) > 0);
+
+        // 人类先出分数牌时，只要 AI 能赢，就压上去把这一轮分拿下。
+        if (getCardScore(leadCard) > 0 && winners.length > 0) {
+          return scoreWinners.length > 0 ? chooseLowestScoreCard(scoreWinners) : chooseLowestPower(winners);
         }
+
+        // AI 自己要出分数牌时，尽量只在能赢下这一轮时出。
+        if (scoreWinners.length > 0) return chooseLowestScoreCard(scoreWinners);
+      } else if (opponent) {
+        const safeScoreCards = playable.filter(a => getCardScore(a.card) > 0 && canLeadCardHold(a.card, opponent));
+        if (safeScoreCards.length > 0) return chooseLowestScoreCard(safeScoreCards);
       }
 
-      // 默认：出最小
-      let best = 0, bestRank = RANK_ORDER.indexOf(playable[0].card.rank);
-      for (let i = 1; i < playable.length; i++) {
-        const r = RANK_ORDER.indexOf(playable[i].card.rank);
-        if (r < bestRank) { bestRank = r; best = i; }
-      }
-      return playable[best];
+      // 默认：出最小非分数牌；不得不出分时，再出最小分数牌。
+      const nonScoreCards = playable.filter(a => getCardScore(a.card) === 0);
+      return chooseLowestPower(nonScoreCards.length > 0 ? nonScoreCards : playable);
     }
 
     function removeCardFromPlayer(player, source) {
@@ -470,7 +496,7 @@
     }
 
     function aiPlayFirst() {
-      const aiResult = aiChooseCard(state.p2, null);
+      const aiResult = aiChooseCard(state.p2, null, state.p1);
       if (!aiResult) return;
       state.playedP2 = aiResult.card;
       if (aiResult.type === 'hand') {
