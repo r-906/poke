@@ -359,7 +359,8 @@
     }
 
     function isJoker(card) { return card.rank === '大王' || card.rank === '小王'; }
-    function isPrivileged(card) { if (isJoker(card)) return true; return card.suit === state.dragonSuit; }
+    function getEffectiveSuit(card) { return isJoker(card) ? state.dragonSuit : card.suit; }
+    function isPrivileged(card) { return getEffectiveSuit(card) === state.dragonSuit; }
     function getCardScore(card) { if (card.rank === '5') return 5; if (card.rank === '10' || card.rank === 'K') return 10; return 0; }
 
     function getAvailableCards(player) {
@@ -371,8 +372,9 @@
 
     function getPlayableCards(player, leadCard) {
       const available = getAvailableCards(player);
-      if (!leadCard || !leadCard.suit) return available;
-      const sameSuit = available.filter(a => a.card.suit === leadCard.suit);
+      if (!leadCard) return available;
+      const leadSuit = getEffectiveSuit(leadCard);
+      const sameSuit = available.filter(a => getEffectiveSuit(a.card) === leadSuit);
       return sameSuit.length > 0 ? sameSuit : available;
     }
 
@@ -386,7 +388,7 @@
       if (fp && !sp) return 1;
       if (!fp && sp) return -1;
       if (fp && sp) return compareRank(firstCard, secondCard);
-      if (firstCard.suit === secondCard.suit) return compareRank(firstCard, secondCard);
+      if (getEffectiveSuit(firstCard) === getEffectiveSuit(secondCard)) return compareRank(firstCard, secondCard);
       return 1;
     }
 
