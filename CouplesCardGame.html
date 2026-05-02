@@ -8,9 +8,10 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --card-w: 44px;
-      --card-h: 63px;
-      --table-peek: 6px;
+      --card-w: 52px;
+      --card-h: 74px;
+      --table-peek: 7px;
+      --card-gap: 6px;
     }
 
     body {
@@ -21,31 +22,41 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px;
-      gap: 10px;
+      padding: 8px 10px;
+      gap: 8px;
+      overflow-x: hidden;
     }
 
     #game-layout {
       display: grid;
-      grid-template-columns: minmax(0, 780px) 220px;
-      gap: 12px;
+      grid-template-columns: 164px minmax(0, 1fr) 180px;
+      gap: 8px;
       align-items: start;
       width: 100%;
-      max-width: 1012px;
+      max-width: 1320px;
+      min-width: 0;
     }
     #game-main {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 10px;
+      align-items: stretch;
+      gap: 7px;
       min-width: 0;
     }
+    #round-panel,
     #side-panel {
       min-width: 0;
     }
+    #round-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      top: 8px;
+    }
 
     h1 {
-      font-size: 1.5rem; text-shadow: 1px 1px 3px #000;
+      font-size: 1.25rem; text-shadow: 1px 1px 3px #000;
       display: flex; align-items: center; gap: 8px;
       justify-content: center;
     }
@@ -55,31 +66,32 @@
     }
 
     #status-bar {
-      background: rgba(0,0,0,0.45); border-radius: 8px; padding: 6px 18px;
-      font-size: 0.9rem; text-align: center; width: 100%; max-width: 780px;
+      background: rgba(0,0,0,0.45); border-radius: 8px; padding: 7px 9px;
+      font-size: 0.78rem; line-height: 1.35; text-align: left; width: 100%;
     }
 
     #dragon-info {
       background: rgba(241,196,15,0.15); border: 1px solid #f1c40f;
-      border-radius: 8px; padding: 4px 14px; font-size: 0.85rem;
-      text-align: center; color: #f1c40f; width: 100%; max-width: 780px;
+      border-radius: 8px; padding: 4px 10px; font-size: 0.8rem;
+      text-align: center; color: #f1c40f; width: 100%;
+      overflow-wrap: anywhere;
     }
 
     .player-zone {
-      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px 14px;
-      width: 100%; max-width: 780px;
+      background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 10px;
+      width: 100%;
     }
-    .player-zone h2 { font-size: 0.9rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .player-zone h2 { font-size: 0.86rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
     .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; background: #e67e22; color: #fff; }
 
-    .row-label { font-size: 0.75rem; color: #bbb; margin-bottom: 3px; margin-top: 4px; }
+    .row-label { font-size: 0.72rem; color: #bbb; margin-bottom: 2px; margin-top: 3px; }
 
-    .card-row { display: flex; flex-wrap: wrap; gap: 5px; min-height: 62px; align-items: flex-end; }
+    .card-row { display: flex; flex-wrap: wrap; gap: var(--card-gap); min-height: var(--card-h); align-items: flex-end; }
 
     .card {
       width: var(--card-w); height: var(--card-h); border-radius: 5px; border: 2px solid #fff;
       display: flex; flex-direction: column; justify-content: space-between;
-      padding: 2px 3px; font-size: 0.75rem; font-weight: bold; cursor: default;
+      padding: 3px 4px; font-size: 0.82rem; font-weight: bold; cursor: default;
       user-select: none; position: relative; background: #fff; color: #222;
       transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0;
     }
@@ -93,13 +105,13 @@
       border-color: #aaa; color: transparent;
     }
     .card .top { align-self: flex-start; line-height: 1; }
-    .card .suit { font-size: 1rem; align-self: center; }
+    .card .suit { font-size: 1.12rem; align-self: center; }
     .card .bottom { align-self: flex-end; line-height: 1; transform: rotate(180deg); }
 
     .card.selectable { cursor: pointer; border-color: #f1c40f; }
-    .card.selectable:hover { transform: translateY(-8px); box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
+    .card.selectable:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
     .card.selected {
-      transform: translateY(-12px); box-shadow: 0 8px 20px rgba(241,196,15,0.8);
+      transform: translateY(-8px); box-shadow: 0 8px 20px rgba(241,196,15,0.8);
       border-color: #f1c40f; border-width: 3px;
     }
     .card.empty {
@@ -107,9 +119,13 @@
     }
 
     .table-row {
-      width: calc(var(--card-w) * 5 + 5px * 4);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-w), var(--card-w)));
+      width: 100%;
+      max-width: 100%;
       min-height: calc(var(--card-h) + var(--table-peek));
       align-content: flex-start;
+      align-items: end;
     }
     .table-slot {
       position: relative;
@@ -134,16 +150,18 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 14px;
+      gap: 8px;
     }
     .table-board {
+      flex: 1 1 0;
+      width: 100%;
       min-width: 0;
     }
     .score-pile {
-      width: 104px;
-      min-height: 142px;
-      padding-top: 18px;
-      flex: 0 0 104px;
+      width: 94px;
+      min-height: 132px;
+      padding-top: 14px;
+      flex: 0 0 94px;
     }
     .score-pile-title {
       font-size: 0.7rem;
@@ -155,13 +173,13 @@
     .score-stack {
       position: relative;
       width: 100%;
-      height: 112px;
+      height: 104px;
     }
     .score-stack .card {
       position: absolute;
-      left: calc(14px + var(--stack-col) * 28px);
-      top: calc(var(--stack-row) * 12px);
-      transform: rotate(calc((var(--stack-col) * 2 - 1) * 2deg)) scale(0.72);
+      left: calc(10px + var(--stack-col) * 25px);
+      top: calc(var(--stack-row) * 11px);
+      transform: rotate(calc((var(--stack-col) * 2 - 1) * 2deg)) scale(0.62);
       transform-origin: top center;
       z-index: var(--stack-i);
       box-shadow: 0 4px 10px rgba(0,0,0,0.35);
@@ -186,18 +204,28 @@
 
     /* ===== 出牌区 ===== */
     #play-area {
-      display: flex; gap: 30px; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px 20px;
-      width: 100%; max-width: 780px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start;
+      background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px;
+      width: 100%;
     }
-    .play-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 70px; }
-    .play-slot span { font-size: 0.78rem; color: #ddd; }
-    #result-banner { font-size: 1.2rem; font-weight: bold; text-align: center; min-height: 1.8rem; text-shadow: 1px 1px 4px #000; }
+    .play-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+    .play-slot span { font-size: 0.72rem; color: #ddd; white-space: nowrap; }
+    #played-p1 .card:not(.empty),
+    #played-p2 .card:not(.empty) {
+      opacity: 1;
+      filter: none;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.35);
+    }
+    #result-banner {
+      grid-column: 1 / -1;
+      font-size: 0.9rem; font-weight: bold; text-align: left; min-height: 2.4rem;
+      line-height: 1.25; text-shadow: 1px 1px 4px #000;
+    }
 
     /* ===== 按钮 ===== */
-    #btn-area { display: flex; gap: 10px; }
+    #btn-area { display: flex; flex-direction: column; gap: 7px; }
     button {
-      padding: 8px 18px; border: none; border-radius: 8px; font-size: 0.9rem;
+      width: 100%; padding: 8px 10px; border: none; border-radius: 8px; font-size: 0.85rem;
       font-weight: bold; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
     }
     button:hover:not(:disabled) { opacity: 0.85; transform: scale(1.04); }
@@ -205,13 +233,13 @@
     #btn-play   { background: #f1c40f; color: #1a1a1a; }
     #btn-restart{ background: #e74c3c; color: #fff; }
 
-    .info-row { font-size: 0.78rem; color: #aee; margin-top: 3px; }
+    .info-row { font-size: 0.74rem; color: #aee; margin-top: 3px; }
 
     /* ===== 历史面板 ===== */
     #history-panel {
-      background: rgba(0,0,0,0.35); border-radius: 10px; padding: 8px 14px;
-      width: 100%; font-size: 0.78rem;
-      position: sticky; top: 16px;
+      background: rgba(0,0,0,0.35); border-radius: 8px; padding: 8px 10px;
+      width: 100%; font-size: 0.74rem;
+      position: sticky; top: 8px;
     }
     #history-panel h3 {
       font-size: 0.85rem; margin-bottom: 6px; color: #f1c40f; display: flex; align-items: center; gap: 6px;
@@ -239,22 +267,59 @@
     }
 
     @media (max-width: 480px) {
-      :root { --card-w: 36px; --card-h: 54px; --table-peek: 5px; }
-      .card { font-size: 0.65rem; }
-      .card .suit { font-size: 0.85rem; }
-      .table-area { gap: 10px; }
-      .score-pile { width: 86px; flex-basis: 86px; }
-      .score-stack .card { left: calc(8px + var(--stack-col) * 24px); top: calc(var(--stack-row) * 11px); }
+      :root { --card-w: 38px; --card-h: 57px; --table-peek: 5px; --card-gap: 5px; }
+      .card { font-size: 0.68rem; padding: 2px 3px; }
+      .card .suit { font-size: 0.88rem; }
+      .table-area { flex-direction: column; gap: 5px; }
+      .table-row { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+      .table-slot { justify-self: start; }
+      .score-pile { width: 100%; min-height: 62px; flex-basis: auto; padding-top: 0; }
+      .score-pile-title,
+      .score-count { text-align: left; }
+      .score-stack { height: 44px; }
+      .score-stack .card { left: calc(6px + var(--stack-col) * 22px); top: calc(var(--stack-row) * 10px); }
     }
-    @media (max-width: 760px) {
+    @media (max-width: 360px) {
+      .table-row { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+    @media (max-width: 960px) {
       #game-layout { display: flex; flex-direction: column; align-items: center; }
-      #game-main, #side-panel { width: 100%; max-width: 780px; }
+      #round-panel, #game-main, #side-panel { width: 100%; max-width: 940px; position: static; }
+      #round-panel { order: 2; }
+      #game-main { order: 1; }
+      #side-panel { order: 3; }
+      #play-area { grid-template-columns: repeat(2, minmax(70px, 1fr)); }
+      #btn-area { flex-direction: row; }
       #history-panel { position: static; }
     }
   </style>
 </head>
 <body>
   <div id="game-layout">
+  <aside id="round-panel">
+    <!-- 出牌区 -->
+    <div id="play-area">
+      <div class="play-slot">
+        <span>你出牌</span>
+        <div id="played-p1"></div>
+      </div>
+      <div class="play-slot">
+        <span>AI 出牌</span>
+        <div id="played-p2"></div>
+      </div>
+      <div id="result-banner">——</div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div id="status-bar">等待开始……</div>
+
+    <!-- 按钮 -->
+    <div id="btn-area">
+      <button id="btn-play" disabled>出牌</button>
+      <button id="btn-restart">重新开始</button>
+    </div>
+  </aside>
+
   <main id="game-main">
   <h1>🃏 扑克牌对战 <span class="ver">v2026.5.2.0</span></h1>
 
@@ -273,28 +338,6 @@
       <div class="score-pile" id="score-pile-p2"></div>
     </div>
     <div class="info-row" id="info-p2"></div>
-  </div>
-
-  <!-- 出牌区 -->
-  <div id="play-area">
-    <div class="play-slot">
-      <span>你出牌</span>
-      <div id="played-p1"></div>
-    </div>
-    <div id="result-banner">——</div>
-    <div class="play-slot">
-      <span>AI 出牌</span>
-      <div id="played-p2"></div>
-    </div>
-  </div>
-
-  <!-- 状态栏 -->
-  <div id="status-bar">等待开始……</div>
-
-  <!-- 按钮 -->
-  <div id="btn-area">
-    <button id="btn-play" disabled>出牌</button>
-    <button id="btn-restart">重新开始</button>
   </div>
 
   <!-- 玩家1（你） -->
