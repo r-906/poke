@@ -8,10 +8,10 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --card-w: 52px;
-      --card-h: 74px;
-      --table-peek: 7px;
-      --card-gap: 6px;
+      --card-w: clamp(50px, 3.8vw, 66px);
+      --card-h: calc(var(--card-w) * 1.42);
+      --table-peek: clamp(6px, 0.55vw, 9px);
+      --card-gap: clamp(5px, 0.45vw, 8px);
     }
 
     body {
@@ -29,11 +29,11 @@
 
     #game-layout {
       display: grid;
-      grid-template-columns: 164px minmax(0, 1fr) 180px;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) clamp(230px, 16vw, 300px);
+      gap: 10px;
       align-items: start;
       width: 100%;
-      max-width: 1320px;
+      max-width: 1840px;
       min-width: 0;
     }
     #game-main {
@@ -43,20 +43,22 @@
       gap: 7px;
       min-width: 0;
     }
-    #round-panel,
     #side-panel {
       min-width: 0;
-    }
-    #round-panel {
       display: flex;
       flex-direction: column;
       gap: 8px;
       position: sticky;
       top: 8px;
     }
+    #round-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
     h1 {
-      font-size: 1.25rem; text-shadow: 1px 1px 3px #000;
+      font-size: clamp(1.25rem, 1.25vw, 1.75rem); text-shadow: 1px 1px 3px #000;
       display: flex; align-items: center; gap: 8px;
       justify-content: center;
     }
@@ -82,6 +84,14 @@
       width: 100%;
     }
     .player-zone h2 { font-size: 0.86rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .player-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(86px, 6.6vw, 118px);
+      gap: 10px;
+      align-items: stretch;
+      min-width: 0;
+    }
+    .player-board { min-width: 0; }
     .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; background: #e67e22; color: #fff; }
 
     .row-label { font-size: 0.72rem; color: #bbb; margin-bottom: 2px; margin-top: 3px; }
@@ -91,7 +101,7 @@
     .card {
       width: var(--card-w); height: var(--card-h); border-radius: 5px; border: 2px solid #fff;
       display: flex; flex-direction: column; justify-content: space-between;
-      padding: 3px 4px; font-size: 0.82rem; font-weight: bold; cursor: default;
+      padding: 3px 4px; font-size: clamp(0.78rem, 0.72vw, 1rem); font-weight: bold; cursor: default;
       user-select: none; position: relative; background: #fff; color: #222;
       transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0;
     }
@@ -105,7 +115,7 @@
       border-color: #aaa; color: transparent;
     }
     .card .top { align-self: flex-start; line-height: 1; }
-    .card .suit { font-size: 1.12rem; align-self: center; }
+    .card .suit { font-size: clamp(1.05rem, 1vw, 1.35rem); align-self: center; }
     .card .bottom { align-self: flex-end; line-height: 1; transform: rotate(180deg); }
 
     .card.selectable { cursor: pointer; border-color: #f1c40f; }
@@ -202,24 +212,35 @@
       line-height: 1.2;
     }
 
-    /* ===== 出牌区 ===== */
-    #play-area {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start;
-      background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px;
-      width: 100%;
+    /* ===== 出牌与回合信息 ===== */
+    .played-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      min-height: 100%;
+      padding: 8px 6px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .play-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
-    .play-slot span { font-size: 0.72rem; color: #ddd; white-space: nowrap; }
-    #played-p1 .card:not(.empty),
-    #played-p2 .card:not(.empty) {
-      opacity: 1;
-      filter: none;
+    .played-title {
+      font-size: 0.72rem;
+      color: #ddd;
+      white-space: nowrap;
+    }
+    .played-panel .card:not(.empty) {
+      opacity: 1 !important;
+      filter: none !important;
       box-shadow: 0 5px 14px rgba(0,0,0,0.35);
     }
     #result-banner {
-      grid-column: 1 / -1;
-      font-size: 0.9rem; font-weight: bold; text-align: left; min-height: 2.4rem;
-      line-height: 1.25; text-shadow: 1px 1px 4px #000;
+      background: rgba(0,0,0,0.35);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 1rem; font-weight: bold; text-align: left; min-height: 3rem;
+      line-height: 1.28; text-shadow: 1px 1px 4px #000;
     }
 
     /* ===== 按钮 ===== */
@@ -239,7 +260,6 @@
     #history-panel {
       background: rgba(0,0,0,0.35); border-radius: 8px; padding: 8px 10px;
       width: 100%; font-size: 0.74rem;
-      position: sticky; top: 8px;
     }
     #history-panel h3 {
       font-size: 0.85rem; margin-bottom: 6px; color: #f1c40f; display: flex; align-items: center; gap: 6px;
@@ -270,6 +290,8 @@
       :root { --card-w: 38px; --card-h: 57px; --table-peek: 5px; --card-gap: 5px; }
       .card { font-size: 0.68rem; padding: 2px 3px; }
       .card .suit { font-size: 0.88rem; }
+      .player-content { grid-template-columns: minmax(0, 1fr) 62px; gap: 6px; }
+      .played-panel { padding: 6px 4px; }
       .table-area { flex-direction: column; gap: 5px; }
       .table-row { grid-template-columns: repeat(8, minmax(0, 1fr)); }
       .table-slot { justify-self: start; }
@@ -284,42 +306,15 @@
     }
     @media (max-width: 960px) {
       #game-layout { display: flex; flex-direction: column; align-items: center; }
-      #round-panel, #game-main, #side-panel { width: 100%; max-width: 940px; position: static; }
-      #round-panel { order: 2; }
+      #game-main, #side-panel { width: 100%; max-width: 940px; position: static; }
       #game-main { order: 1; }
-      #side-panel { order: 3; }
-      #play-area { grid-template-columns: repeat(2, minmax(70px, 1fr)); }
+      #side-panel { order: 2; }
       #btn-area { flex-direction: row; }
-      #history-panel { position: static; }
     }
   </style>
 </head>
 <body>
   <div id="game-layout">
-  <aside id="round-panel">
-    <!-- 出牌区 -->
-    <div id="play-area">
-      <div class="play-slot">
-        <span>你出牌</span>
-        <div id="played-p1"></div>
-      </div>
-      <div class="play-slot">
-        <span>AI 出牌</span>
-        <div id="played-p2"></div>
-      </div>
-      <div id="result-banner">——</div>
-    </div>
-
-    <!-- 状态栏 -->
-    <div id="status-bar">等待开始……</div>
-
-    <!-- 按钮 -->
-    <div id="btn-area">
-      <button id="btn-play" disabled>出牌</button>
-      <button id="btn-restart">重新开始</button>
-    </div>
-  </aside>
-
   <main id="game-main">
   <h1>🃏 扑克牌对战 <span class="ver">v2026.5.2.0</span></h1>
 
@@ -328,6 +323,8 @@
   <!-- 玩家2（AI） -->
   <div class="player-zone" id="zone-p2">
     <h2>🤖 玩家2（AI） <span id="badge-p2" class="badge" style="display:none">先手</span></h2>
+    <div class="player-content">
+    <div class="player-board">
     <div class="row-label">手牌（AI，牌面朝下）</div>
     <div class="card-row" id="hand-p2"></div>
     <div class="table-area">
@@ -338,11 +335,19 @@
       <div class="score-pile" id="score-pile-p2"></div>
     </div>
     <div class="info-row" id="info-p2"></div>
+    </div>
+    <div class="played-panel">
+      <div class="played-title">AI 出牌</div>
+      <div id="played-p2"></div>
+    </div>
+    </div>
   </div>
 
   <!-- 玩家1（你） -->
   <div class="player-zone" id="zone-p1">
     <h2>🧑 玩家1（你） <span id="badge-p1" class="badge" style="display:none">先手</span></h2>
+    <div class="player-content">
+    <div class="player-board">
     <div class="table-area">
       <div class="table-board">
         <div class="row-label">桌面牌（点击选择）</div>
@@ -353,10 +358,24 @@
     <div class="row-label">手牌（点击选择）</div>
     <div class="card-row" id="hand-p1"></div>
     <div class="info-row" id="info-p1"></div>
+    </div>
+    <div class="played-panel">
+      <div class="played-title">你出牌</div>
+      <div id="played-p1"></div>
+    </div>
+    </div>
   </div>
   </main>
 
   <aside id="side-panel">
+    <div id="round-panel">
+      <div id="result-banner">——</div>
+      <div id="status-bar">等待开始……</div>
+      <div id="btn-area">
+        <button id="btn-play" disabled>出牌</button>
+        <button id="btn-restart">重新开始</button>
+      </div>
+    </div>
     <div id="history-panel"></div>
   </aside>
   </div>
